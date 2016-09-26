@@ -1,0 +1,12 @@
+
+article	Public
+	View
+	Search
+
+User Admin 
+	Add article
+	Edit article
+	Delete article
+	Login 
+	Logout
+
