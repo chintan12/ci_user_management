@@ -7,6 +7,18 @@
 	<?php echo form_open("login/admin_login", array('class' => 'form-horizontal' )); ?>
   	<fieldset>
     <legend>Login Admin</legend>
+    	
+    	<?php if ($msg = $this->session->flashdata('login_failed')): ?>
+	    	<div class="row">
+				<div class="col-lg-2"></div>
+		      	<div class="col-lg-5">
+		      		<div class="<?php echo $this->session->flashdata('class') ?>">
+		      			<?= $msg ?>
+		      		</div>
+		      	</div>
+		    </div>
+		<?php endif; ?>
+
 	    <div class="form-group">
 	      <label for="inputEmail" class="col-lg-2 control-label">Username :</label>
 	      <div class="col-lg-5">

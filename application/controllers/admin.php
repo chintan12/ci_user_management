@@ -54,13 +54,22 @@ class Admin extends MY_Controller
 	}
 
 	public function store_article(){
+		
 		$this->load->library("form_validation");
-		if($this->form_validation->run("articleform") == TRUE){
+		$config = array(
+					"upload_path" => './uploads/orignal',
+					"allowed_types"	=> "jpg|gif|png|jpeg"
+				);
+		$this->load->library('upload', $config);
+		if($this->form_validation->run("articleform") == TRUE && $this->upload->do_upload("image")){
 			$data = $this->input->post();	
 			$data['user_id'] = $this->session->userdata("sid");
+			$imageDetails = $this->upload->data();
+			$data['image_path'] = base_url("uploads/orignal" . $imageDetails['raw_name'] . $imageDetails['file_ext']);
 			$this->__FeedbackAndRedirect($this->admin->insert_article($data), "The article is successfully Added", "The article is Fails to Added");
 		}else{
-			$this->load->view("admin/article_form");
+			$upload_error = $this->upload->display_errors("<p class='text-danger'>", "</p>");
+			$this->load->view("admin/article_form", compact($upload_error));
 		}
 	}
 

@@ -32,7 +32,9 @@ class Login extends MY_Controller
 				$this->session->set_userdata("sid",$login_id);
 				redirect('admin/dashboard');
 			}else{
-				echo "not Found";
+				$this->session->set_flashdata('login_failed','Invalid Username/Password.');
+				$this->session->set_flashdata("class", "alert alert-dismissible alert-danger");
+				return redirect("login");
 			}
 		}else{
 			$this->load->view("public/login");
