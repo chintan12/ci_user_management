@@ -54,22 +54,18 @@ class Admin extends MY_Controller
 	}
 
 	public function store_article(){
-		
 		$this->load->library("form_validation");
-		$config = array(
-					"upload_path" => './uploads/orignal',
-					"allowed_types"	=> "jpg|gif|png|jpeg"
-				);
+		$config = $this->__ImageConfiguration();
 		$this->load->library('upload', $config);
 		if($this->form_validation->run("articleform") == TRUE && $this->upload->do_upload("image")){
-			$data = $this->input->post();	
+			$data = $this->security->xss_clean($this->input->post());	
 			$data['user_id'] = $this->session->userdata("sid");
 			$imageDetails = $this->upload->data();
-			$data['image_path'] = base_url("uploads/orignal" . $imageDetails['raw_name'] . $imageDetails['file_ext']);
+			$data['image_path'] = "/uploads/orignal/" . $imageDetails['raw_name'] . $imageDetails['file_ext'];
 			$this->__FeedbackAndRedirect($this->admin->insert_article($data), "The article is successfully Added", "The article is Fails to Added");
 		}else{
 			$upload_error = $this->upload->display_errors("<p class='text-danger'>", "</p>");
-			$this->load->view("admin/article_form", compact($upload_error));
+			$this->load->view("admin/article_form", compact("upload_error"));
 		}
 	}
 
@@ -86,9 +82,20 @@ class Admin extends MY_Controller
 
 	public function update_article($article_id){
 		$this->load->library("form_validation");
+		$config = $this->__ImageConfiguration();
+		$this->load->library('upload', $config);
 		if($this->form_validation->run("articleform") == TRUE){
-			$data = $this->input->post();	
+			$data = $data = $this->security->xss_clean($this->input->post());
+			unset($data["old_image"]);	
 			$user_id = $this->session->userdata("sid");
+			if($this->upload->do_upload("image")){
+				$imageDetails = $this->upload->data();
+				$data['image_path'] = "uploads/orignal/" . $imageDetails['raw_name'] . $imageDetails['file_ext'];
+				@unlink($this->input->post("old_image"));				
+			}else{
+				$upload_error = $this->upload->display_errors("<p class='text-danger'>", "</p>");
+				$this->load->view("admin/edit_article_form", compact("upload_error"));
+			}
 			$this->__FeedbackAndRedirect($this->admin->update_articles($data, $article_id, $user_id), "The article is successfully Updated", "The article is Fails to Updated");
 		}else{
 			$this->edit_article($article_id);
@@ -98,6 +105,8 @@ class Admin extends MY_Controller
 	public function delete_article(){
 		$article_id = $this->input->post("id");
 		$user_id = $this->session->userdata("sid");
+		$image = $this->admin->getArticalImage(array("id" => $article_id, "user_id" => $user_id));
+		@unlink($image->image_path);
 		$this->__FeedbackAndRedirect($this->admin->delete_articles($article_id, $user_id), "The article is successfully Deleted", "The article is Fails to Deleted");
 	}
 
@@ -110,6 +119,13 @@ class Admin extends MY_Controller
 			$this->session->set_flashdata("class", "alert alert-dismissible alert-danger");
 		}
 		redirect("admin/dashboard");
+	}
+
+	private function __ImageConfiguration(){
+		return array(
+					"upload_path" => './uploads/orignal/',
+					"allowed_types"	=> "jpg|gif|png|jpeg"
+				);
 	}
 }
 

@@ -47,7 +47,7 @@ class Adminmodel extends CI_Model
 	}
 
 	public function get_article($article_id, $user_id){
-		$query = $this->db->select("id, title, body")
+		$query = $this->db->select("id, title, body, image_path")
 							->where(["id" => $article_id, "user_id" => $user_id])
 							->get("article");
 		if($query->num_rows()){
@@ -98,6 +98,13 @@ class Adminmodel extends CI_Model
 			return false;
 		}			
 
+	}
+
+	public function getArticalImage($data){
+		$q = $this->db->select("image_path")
+						->where($data)
+						->get("article");
+		return $q->row();
 	}
 
 }
